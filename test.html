@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="Jean-Michel Bruneau - UCA - IUT - INFO" />
+    <title>M413 - TD 5 - Basic Calc</title>
+    <link href="assets/favicon.ico" rel="icon" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="css/td5.css" />
+    <script defer="defer" src="js/td5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <!-- or -->
+    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
+</head>
+
+<style>
+    #scale-element {
+        display: block;
+        max-width: 100%;
+        margin: 1rem auto;
+        touch-action: none;
+    }
+
+    #scale-element.reset {
+        transition: transform 0.3s ease-in-out;
+    }
+</style>
+
+<body>
+    <!-- enable javascript to view a demo -->
+    <div id="gesture-area">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/640px-Image_created_with_a_mobile_phone.png" alt="sample image" id="scale-element">
+    </div>
+</body></html>
+
+
+<script>
+    var angleScale = {
+        angle: 0,
+        scale: 1
+    }
+    var gestureArea = document.getElementById('gesture-area')
+    var scaleElement = document.getElementById('scale-element')
+    var resetTimeout
+
+    interact(gestureArea)
+        .gesturable({
+            listeners: {
+                start(event) {
+                    angleScale.angle -= event.angle
+
+                    clearTimeout(resetTimeout)
+                    scaleElement.classList.remove('reset')
+                },
+                move(event) {
+                    // document.body.appendChild(new Text(event.scale))
+                    var currentAngle = event.angle + angleScale.angle
+                    var currentScale = event.scale * angleScale.scale
+
+                    scaleElement.style.transform =
+                        'rotate(' + currentAngle + 'deg)' + 'scale(' + currentScale + ')'
+
+                    // uses the dragMoveListener from the draggable demo above
+                    dragMoveListener(event)
+                },
+                end(event) {
+                    angleScale.angle = angleScale.angle + event.angle
+                    angleScale.scale = angleScale.scale * event.scale
+
+                    resetTimeout = setTimeout(reset, 1000)
+                    scaleElement.classList.add('reset')
+                }
+            }
+        })
+        .draggable({
+        inertia: false,
+            // keep the element within the area of it's parent
+    restrict: {
+      restriction: "parent",
+      endOnly: true,
+      elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+    },
+
+    // call this function on every dragmove event
+    onmove: dragMoveListener,
+    // call this function on every dragend event
+    onend: function (event) {
+    }
+  });
+
+    function reset() {
+        scaleElement.style.transform = 'scale(1)'
+
+        angleScale.angle = 0
+        angleScale.scale = 1
+    }
+    
+    function dragMoveListener (event) {
+    var target = event.target,
+        // keep the dragged position in the data-x/data-y attributes
+        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+    // translate the element
+    target.style.webkitTransform =
+    target.style.transform =
+      'translate(' + x + 'px, ' + y + 'px)';
+
+    // update the posiion attributes
+    target.setAttribute('data-x', x);
+    target.setAttribute('data-y', y);
+  }
+
+</script>
